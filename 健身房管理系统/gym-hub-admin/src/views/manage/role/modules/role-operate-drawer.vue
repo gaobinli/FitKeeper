@@ -1,0 +1,158 @@
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue';
+import { useBoolean } from '@sa/hooks';
+import { useFormRules, useNaiveForm } from '@/hooks/common/form';
+import { $t } from '@/locales';
+import { enableStatusOptions } from '@/constants/business';
+import MenuAuthModal from './menu-auth-modal.vue';
+import ButtonAuthModal from './button-auth-modal.vue';
+import { fetchPostRole, fetchPatchRole, fetchAllParentMenu } from '@/service/api';
+
+defineOptions({
+  name: 'RoleOperateDrawer'
+});
+
+interface Props {
+  /** the type of operation */
+  operateType: NaiveUI.TableOperateType;
+  /** the edit row data */
+  rowData?: Api.SystemManage.Role | null;
+}
+
+const props = defineProps<Props>();
+
+interface Emits {
+  (e: 'submitted'): void;
+}
+
+const emit = defineEmits<Emits>();
+
+const visible = defineModel<boolean>('visible', {
+  default: false
+});
+
+const { formRef, validate, restoreValidation } = useNaiveForm();
+const { defaultRequiredRule } = useFormRules();
+const { bool: menuAuthVisible, setTrue: openMenuAuthModal } = useBoolean();
+const { bool: buttonAuthVisible, setTrue: openButtonAuthModal } = useBoolean();
+
+const title = computed(() => {
+  const titles: Record<NaiveUI.TableOperateType, string> = {
+    add: $t('page.manage.role.addRole'),
+    edit: $t('page.manage.role.editRole')
+  };
+  return titles[props.operateType];
+});
+
+type Model = Pick<Api.SystemManage.Role, 'name' | 'code'>;
+
+const model = ref(createDefaultModel());
+
+function createDefaultModel(): Model {
+  return {
+    id: null,
+    name: '',
+    code: '',
+    menuCodes: []
+  };
+}
+
+type RuleKey = Exclude<keyof Model, 'roleDesc'>;
+
+const rules: Record<RuleKey, App.Global.FormRule> = {
+  name: defaultRequiredRule,
+  code: defaultRequiredRule
+};
+
+const roleId = computed(() => props.rowData?.id || -1);
+
+const isEdit = computed(() => props.operateType === 'edit');
+
+function handleInitModel() {
+  model.value = createDefaultModel();
+
+  if (props.operateType === 'edit' && props.rowData) {
+    Object.assign(model.value, props.rowData);
+  }
+  
+  getMenuOptions()
+}
+
+async function getMenuOptions() {
+  const { error, data } = await fetchAllParentMenu();
+  if (!data) {
+    return
+  }
+  menuOptions.value = []
+  
+  for (const item of data) {
+    menuOptions.value.push({ label: item.name, value: item.code });
+  }
+}
+
+const menuOptions = ref([])
+
+function closeDrawer() {
+  visible.value = false;
+}
+
+async function handleSubmit() {
+  await validate();
+  // request
+  
+  if (model.value.id) {
+    const { error, data } = await fetchPatchRole(model.value.id, model.value);
+    if (error) {
+      return 
+    }
+  } else {
+    const { error, data } = await fetchPostRole(model.value);
+    if (error) {
+      return 
+    }
+  
+  }
+  
+  window.$message?.success($t('common.updateSuccess'));
+  closeDrawer();
+  emit('submitted');
+}
+
+watch(visible, () => {
+  if (visible.value) {
+    handleInitModel();
+    restoreValidation();
+  }
+});
+</script>
+
+<template>
+  <NDrawer v-model:show="visible" display-directive="show" :width="360">
+    <NDrawerContent :title="title" :native-scrollbar="false" closable>
+      <NForm ref="formRef" :model="model" :rules="rules">
+        <NFormItem label="角色名称" path="name">
+          <NInput v-model:value="model.name" placeholder="请输入" />
+        </NFormItem>
+        <NFormItem label="角色编码" path="code">
+          <NInput v-model:value="model.code" placeholder="请输入" />
+        </NFormItem>
+        <NFormItem label="菜单" path="menuCodes">
+          <NSelect
+            v-model:value="model.menuCodes" multiple 
+            :filterable='true'
+            :options="menuOptions"
+            :placeholder="请选择"
+          />
+        </NFormItem>
+      </NForm>
+      <template #footer>
+        <NSpace :size="16">
+          <NButton @click="closeDrawer">{{ $t('common.cancel') }}</NButton>
+          <NButton type="primary" @click="handleSubmit">{{ $t('common.confirm') }}</NButton>
+        </NSpace>
+      </template>
+    </NDrawerContent>
+  </NDrawer>
+</template>
+
+<style scoped></style>

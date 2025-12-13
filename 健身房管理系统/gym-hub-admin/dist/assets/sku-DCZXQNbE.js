@@ -1,0 +1,1 @@
+import{aI as u,aJ as r}from"./index-BAq2SbaD.js";function n(t){return u({url:r("/sku",t),method:"get"})}function o(t){return u({url:"/sku",method:"post",data:t})}function a(t,e){return u({url:"/sku/"+t,method:"patch",data:e})}function c(t){return u({url:"/sku/"+t,method:"delete"})}function f(){return u({url:"/sku/list",method:"get"})}export{a,o as b,c,n as d,f};

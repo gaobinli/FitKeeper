@@ -1,0 +1,82 @@
+package com.nova.domain.dto.res;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import org.springframework.validation.annotation.Validated;
+
+@Validated
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+@ApiModel
+public class ClassificationResDto implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+/**
+ * 主键 INT
+ */
+@ApiModelProperty(value = "主键")
+@JsonProperty(index = 0)
+
+    private Integer id;
+/**
+ * 分类 VARCHAR
+ */
+@ApiModelProperty(value = "分类")
+@JsonProperty(index = 10)
+
+    private String name;
+/**
+ * 排序 INT
+ */
+@ApiModelProperty(value = "排序")
+@JsonProperty(index = 20)
+
+    private Integer sort;
+/**
+ * 创建人 VARCHAR
+ */
+@ApiModelProperty(value = "创建人")
+@JsonProperty(index = 40)
+
+    private String createUser;
+/**
+ * 创建时间 DATETIME
+ */
+@ApiModelProperty(value = "创建时间")
+@JsonProperty(index = 50)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createTime;
+/**
+ * 修改人 VARCHAR
+ */
+@ApiModelProperty(value = "修改人")
+@JsonProperty(index = 60)
+
+    private String modifyUser;
+/**
+ * 修改时间 DATETIME
+ */
+@ApiModelProperty(value = "修改时间")
+@JsonProperty(index = 70)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime modifyTime;
+
+
+
+}
+
+
+
+
+
+
